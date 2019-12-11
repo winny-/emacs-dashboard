@@ -277,8 +277,9 @@ Return entire list if `END' is omitted."
 Optionally, provide NO-NEXT-LINE to move the cursor forward a line."
   `(progn
      (eval-when-compile (defvar dashboard-mode-map))
-     (let ((sym (make-symbol (format "Jump to \"%s\"" ,search-label))))
+     (let ((sym (make-symbol (format "dashboard-jump-to-%s" (downcase (replace-regexp-in-string " +" "-"  (replace-regexp-in-string ":+" "" ,search-label nil nil nil) nil nil nil))))))
        (fset sym (lambda ()
+                   ,(format "Jump to %s.\n\nThis code is dynamically generated in `dashboard-insert-shortcut'." (replace-regexp-in-string ":+" "" (format "%s" search-label) nil nil nil))
                    (interactive)
                    (unless (search-forward ,search-label (point-max) t)
                      (search-backward ,search-label (point-min) t))
