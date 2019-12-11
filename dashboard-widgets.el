@@ -198,9 +198,9 @@ If nil it is disabled.  Possible values for list-type are:
                                    (registers . "e"))
   "Association list of items and their corresponding shortcuts.
 Will be of the form `(list-type . keys)' as understood by
-`(kbd keys)'.  If nil, shortcuts are disabled. If an entry's value
-is nil, that item's shortcut is disbaled. See `dashboard-items'
-for possible values of list-type.'")
+`(kbd keys)'.  If nil, shortcuts are disabled.  If an entry's
+value is nil, that item's shortcut is disbaled.  See
+`dashboard-items' for possible values of list-type.'")
 
 (defvar dashboard-items-default-length 20
   "Length used for startup lists with otherwise unspecified bounds.
@@ -266,7 +266,7 @@ Return entire list if `END' is omitted."
                               (min len end)))))
 
 (defun dashboard-get-shortcut (item)
-  "Get the shortcut to be used for `item'.'"
+  "Get the shortcut to be used for ITEM."
   (let ((elem (assq item dashboard-item-shortcuts)))
     (and elem (cdr elem))))
 
@@ -277,9 +277,18 @@ Return entire list if `END' is omitted."
 Optionally, provide NO-NEXT-LINE to move the cursor forward a line."
   `(progn
      (eval-when-compile (defvar dashboard-mode-map))
-     (let ((sym (make-symbol (format "dashboard-jump-to-%s" (downcase (replace-regexp-in-string " +" "-"  (replace-regexp-in-string ":+" "" ,search-label nil nil nil) nil nil nil))))))
+     (let ((sym (make-symbol (format "dashboard-jump-to-%s" (downcase
+                                                             (replace-regexp-in-string
+                                                              " +" "-" (replace-regexp-in-string
+                                                                        ":+" "" ,search-label
+                                                                        nil nil nil)
+                                                              nil nil nil))))))
        (fset sym (lambda ()
-                   ,(format "Jump to %s.\n\nThis code is dynamically generated in `dashboard-insert-shortcut'." (replace-regexp-in-string ":+" "" (format "%s" search-label) nil nil nil))
+                   ,(concat
+                     "Jump to "
+                     (replace-regexp-in-string
+                      ":+" "" (format "%s" search-label) nil nil nil)
+                     ".  This code is dynamically generated in `dashboard-insert-shortcut'.")
                    (interactive)
                    (unless (search-forward ,search-label (point-max) t)
                      (search-backward ,search-label (point-min) t))
@@ -489,12 +498,12 @@ WIDGET-PARAMS are passed to the \"widget-create\" function."
      (dashboard-insert-heading ,section-name
                                (if (and ,list ,shortcut dashboard-show-shortcuts) ,shortcut))
      (if ,list
-       (when (and (dashboard-insert-section-list
-                    ,section-name
-                    (dashboard-subseq ,list 0 ,list-size)
-                    ,action
-                    ,@widget-params)
-                  ,shortcut)
+         (when (and (dashboard-insert-section-list
+                     ,section-name
+                     (dashboard-subseq ,list 0 ,list-size)
+                     ,action
+                     ,@widget-params)
+                    ,shortcut)
            (dashboard-insert-shortcut ,shortcut ,section-name))
        (insert "\n    --- No items ---"))))
 
