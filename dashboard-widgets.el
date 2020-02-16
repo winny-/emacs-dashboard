@@ -320,28 +320,24 @@ Return entire list if `END' is omitted."
                                      &optional no-next-line)
   "Insert a shortcut SHORTCUT-CHAR for a given SEARCH-LABEL.
 Optionally, provide NO-NEXT-LINE to move the cursor forward a line."
-  `(progn
-     (eval-when-compile (defvar dashboard-mode-map))
-     (let ((sym (make-symbol (format "dashboard-jump-to-%s" (downcase
-                                                             (replace-regexp-in-string
-                                                              " +" "-" (replace-regexp-in-string
-                                                                        ":+" "" ,search-label
-                                                                        nil nil nil)
-                                                              nil nil nil))))))
-       (fset sym (lambda ()
-                   ,(concat
-                     "Jump to "
-                     (replace-regexp-in-string
-                      ":+" "" (format "%s" search-label) nil nil nil)
-                     ".  This code is dynamically generated in `dashboard-insert-shortcut'.")
-                   (interactive)
-                   (unless (search-forward ,search-label (point-max) t)
-                     (search-backward ,search-label (point-min) t))
-                   ,@(unless no-next-line
-                       '((forward-line 1)))
-                   (back-to-indentation)))
+  (let* ((name (downcase (replace-regexp-in-string
+                         ":+" "" (format "%s" search-label) nil nil nil)))
+        (sym (make-symbol (format "dashboard-jump-to-%s" name))))
+    `(progn
+       (eval-when-compile (defvar dashboard-mode-map))
+       (defun ,sym nil
+         ,(concat
+           "Jump to "
+           name
+           ".  This code is dynamically generated in `dashboard-insert-shortcut'.")
+         (interactive)
+         (unless (search-forward ,search-label (point-max) t)
+           (search-backward ,search-label (point-min) t))
+         ,@(unless no-next-line
+             '((forward-line 1)))
+         (back-to-indentation))
        (eval-after-load 'dashboard
-         (define-key dashboard-mode-map ,shortcut-char sym)))))
+         (define-key dashboard-mode-map ,shortcut-char ',sym)))))
 
 (defun dashboard-append (msg &optional _messagebuf)
   "Append MSG to dashboard buffer.
